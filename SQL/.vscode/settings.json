@@ -1,0 +1,19 @@
+{
+	"sqltools.connections": [
+		{
+			"mysqlOptions": {
+				"authProtocol": "default",
+				"enableSsl": "Disabled"
+			},
+			"previewLimit": 50,
+			"server": "localhost",
+			"port": 3306,
+			"driver": "MySQL",
+			"name": "curso Jon Mircha",
+			"password": "Camilo_7325",
+			"username": "root",
+			"database": "curso_sql"
+		}
+	],
+	"cSpell.words": ["desencriptar", "encriptación"]
+}
