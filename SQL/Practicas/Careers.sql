@@ -16,20 +16,20 @@ CREATE TABLE IF NOT EXISTS countries(
 );
 
 -- Principal
-CREATE TABLE IF NOT EXISTS careers(
-  id_career INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name Varchar(50) NOT NULL,
-  type_career INT UNSIGNED NOT NULL,
-  date DATE NOT NULL,
-  duration VARCHAR(10) NOT NULL,
-  best_time BOOLEAN DEFAULT FALSE,
-  altitude INT,
-  place VARCHAR(50),
-  country INT UNSIGNED NOT NULL,
-  photo VARCHAR(255) DEFAULT 'default.png',
-  FOREIGN KEY (type_career) REFERENCES type_career(id_type_career) ON DELETE RESTRICT ON UPDATE CASCADE,
-  FOREIGN KEY (country) REFERENCES countries(id_country) ON DELETE RESTRICT ON UPDATE CASCADE
-);
+  CREATE TABLE IF NOT EXISTS careers(
+    id_career INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name Varchar(50) NOT NULL,
+    type_career INT UNSIGNED NOT NULL,
+    date DATE NOT NULL,
+    duration VARCHAR(10) NOT NULL,
+    best_time BOOLEAN DEFAULT FALSE,
+    altitude INT,
+    place VARCHAR(50),
+    country INT UNSIGNED NOT NULL,
+    photo VARCHAR(255) DEFAULT 'default.png',
+    FOREIGN KEY (type_career) REFERENCES type_career(id_type_career) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (country) REFERENCES countries(id_country) ON DELETE RESTRICT ON UPDATE CASCADE
+  );
 
 -- Insertamos datos para nuestras tablas que servirán como catálogos
 -- Países, Jon solo ha tenido la oportunidad de correr en dos países por lo que no pondré mas
@@ -54,54 +54,19 @@ INSERT INTO type_career( description, distance ) VALUES
 SELECT * FROM countries;
 SELECT * FROM type_career;
 
--- Creamos un stored procedure que nos ayudara al momento de crear una nueva maratón
+-- Insertamos las carreras en las que ha participado Jon
+-- Me percate que no necesitaba un store procedure, ya que solo debemos afectar esta tabla, si queremos agaragar un nuevo tipo de carrera o un nuevo país, lo haremos directamente a esta tabla desde nuestro código
+INSERT INTO careers( name, type_career, date, duration, altitude, place, country, photo) VALUES 
+  ('Carrera We Run México 2011', 4, '2011-11-26', '0:56:59', 2250, 'CDMX', 1, 'img/carrera-01.jpg' ),
+  ('Reto Bosques de las Lomas', 5, '2012-05-13', '1:20:21', 2250, 'EdoMex', 1, 'img/carrera-02.jpg' ),
+  ('Maratón de la Ciudad de México 2012', 8, '2012-09-02', '4:35:35', 2250, 'CDMX', 1, 'img/carrera-03'),
+  ('Maratón de la Ciudad de México 2012', 8, '2012-09-02', '4:35:35', 2250, 'CDMX', 1, 'img/carrera-04'),
+  ('San Francisco Marathon 2015', 8, '2015-07-26', '1:33:38', 20, 'San Francisco', 2, 'img/carrera/05');
 
-DELIMITER $$ 
 
-CREATE PROCEDURE sp_create_career(
-  IN i_name VARCHAR(50),
-  IN i_type_career INT UNSIGNED,
-  IN i_date DATE,
-  IN i_duration VARCHAR(10),
-  IN i_altitude INT,
-  IN i_place VARCHAR(50),
-  IN i_country INT UNSIGNED,
-  IN i_description_career TEXT,
-  IN i_distance_career INT,
-  IN i_best_time BOOLEAN,
-  IN i_photo VARCHAR(255)
-)
+SELECT * FROM careers;
+TRUNCATE careers;
 
-BEGIN
-  -- Declaramos las variables que nos ayudaran a validar los datos que nos envían
-  DECLARE v_type_career INT UNSIGNED;
-  DECLARE v_country INT UNSIGNED;
-
-  -- Validamos que el tipo de carrera exista
-  SELECT id_type_career INTO v_type_career FROM type_career WHERE id_type_career = i_type_career;
-
-  IF v_type_career IS NULL THEN
-    -- Si la carrera no existe la agregaremos a nuestra tabla
-    INSERT INTO type_career( description, distance ) VALUES 
-      ( i_description_career, i_distance_career);
-    
-    SELECT LAST_INSERT_ID() INTO v_type_career;
-  END IF;
-
-  -- Validamos que el país exista
-  SELECT id_country INTO v_country FROM countries WHERE id_country = i_country;
-
-  -- Haremos lo mismo que con las carreras
-  IF v_country IS NULL THEN
-    -- Si el país no existe lo agregaremos a nuestra tabla
-    INSERT INTO countries( name ) VALUES 
-      ( i_country );
-    
-    SELECT LAST_INSERT_ID() INTO v_country;
-  END IF;
-
-  INSERT INTO careers( name, type_career, date, duration, altitude, place, country, best_time, photo ) VALUES
-    ( i_name, i_type_career, i_date, i_duration, i_altitude, i_place, i_country, i_best_time, i_photo)
-END $$
-
-DELIMITER ;
+-- Y para obtener las carreras en las que ha participado Jon con los tipos de carreras y países, solo debemos hacer un join
+-- De esta forma podremos tener toda la información que necesitemos de nuestras tablas
+SELECT c.name, c.duration, c.altitude, countries.name AS country, tp.description AS type_career FROM careers c INNER JOIN countries ON c.country = countries.id_country INNER JOIN type_career tp ON c.type_career = tp.id_type_career ;
